@@ -8,6 +8,9 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.andriyanto.detection.databinding.ActivityMainBinding
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.face.FaceDetection
+import com.google.mlkit.vision.face.FaceDetectorOptions
 import org.tensorflow.lite.Interpreter
 import java.io.FileInputStream
 import java.io.IOException
@@ -69,11 +72,36 @@ class MainActivity : AppCompatActivity() {
                 val bitmap = BitmapFactory.decodeStream(inputStream)
                 binding.imageView.setImageBitmap(bitmap)
 
-                // Perform predictions
-                predictAgeGender(bitmap)
-                predictExpression(bitmap)
+                // Perform face detection
+                detectFace(bitmap)
             }
         }
+    }
+
+    private fun detectFace(bitmap: Bitmap) {
+        val image = InputImage.fromBitmap(bitmap, 0)
+        val options = FaceDetectorOptions.Builder()
+            .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
+            .setContourMode(FaceDetectorOptions.CONTOUR_MODE_NONE)
+            .build()
+        val detector = FaceDetection.getClient(options)
+
+        detector.process(image)
+            .addOnSuccessListener { faces ->
+                if (faces.isEmpty()) {
+                    binding.ageGenderTextView.text = "No face detected"
+                    binding.expressionTextView.text = ""
+                } else {
+                    // Perform predictions
+                    predictAgeGender(bitmap)
+                    predictExpression(bitmap)
+                }
+            }
+            .addOnFailureListener { e ->
+                e.printStackTrace()
+                binding.ageGenderTextView.text = "Face detection failed"
+                binding.expressionTextView.text = ""
+            }
     }
 
     private fun predictAgeGender(bitmap: Bitmap) {

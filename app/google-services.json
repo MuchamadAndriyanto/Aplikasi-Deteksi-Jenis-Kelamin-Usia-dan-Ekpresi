@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "407364669062",
+    "project_id": "detection-4a823",
+    "storage_bucket": "detection-4a823.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:407364669062:android:4e884700162b1cd794cb07",
+        "android_client_info": {
+          "package_name": "com.andriyanto.detection"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAhBmCF1cTQRWnx2tUNCfJ9eSXL3BKLTcM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

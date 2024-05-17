@@ -1,12 +1,18 @@
 package com.andriyanto.detection
 
+import android.Manifest
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.andriyanto.detection.databinding.ActivityMainBinding
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetection
@@ -28,6 +34,8 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val SELECT_PHOTO_REQUEST_CODE = 1
+        private const val OPEN_CAMERA_REQUEST_CODE = 2
+        private const val CAMERA_PERMISSION_REQUEST_CODE = 3
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,6 +52,10 @@ class MainActivity : AppCompatActivity() {
 
         binding.selectImageButton.setOnClickListener {
             selectImageFromGallery()
+        }
+
+        binding.openCameraButton.setOnClickListener {
+            openCamera()
         }
     }
 
@@ -63,17 +75,57 @@ class MainActivity : AppCompatActivity() {
         startActivityForResult(intent, SELECT_PHOTO_REQUEST_CODE)
     }
 
+    private fun openCamera() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+            != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA),
+                CAMERA_PERMISSION_REQUEST_CODE)
+        } else {
+            val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            startActivityForResult(intent, OPEN_CAMERA_REQUEST_CODE)
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int, permissions: Array<String>, grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            CAMERA_PERMISSION_REQUEST_CODE -> {
+                if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    openCamera()
+                } else {
+                    Toast.makeText(this, "Camera permission is required to use the camera", Toast.LENGTH_SHORT).show()
+                }
+                return
+            }
+        }
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == SELECT_PHOTO_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            val imageUri: Uri? = data?.data
-            if (imageUri != null) {
-                val inputStream: InputStream? = contentResolver.openInputStream(imageUri)
-                val bitmap = BitmapFactory.decodeStream(inputStream)
-                binding.imageView.setImageBitmap(bitmap)
+        when (requestCode) {
+            SELECT_PHOTO_REQUEST_CODE -> {
+                if (resultCode == Activity.RESULT_OK) {
+                    val imageUri: Uri? = data?.data
+                    if (imageUri != null) {
+                        val inputStream: InputStream? = contentResolver.openInputStream(imageUri)
+                        val bitmap = BitmapFactory.decodeStream(inputStream)
+                        binding.imageView.setImageBitmap(bitmap)
 
-                // Perform face detection
-                detectFace(bitmap)
+                        // Perform face detection
+                        detectFace(bitmap)
+                    }
+                }
+            }
+            OPEN_CAMERA_REQUEST_CODE -> {
+                if (resultCode == Activity.RESULT_OK) {
+                    val imageBitmap = data?.extras?.get("data") as Bitmap
+                    binding.imageView.setImageBitmap(imageBitmap)
+
+                    // Perform face detection
+                    detectFace(imageBitmap)
+                }
             }
         }
     }

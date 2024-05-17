@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/tvDetection"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="15dp"
+        android:textStyle="bold"
+        android:text="Aplikasi Detection Komedian"
+        android:textSize="25sp" />
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="50dp"
+        android:layout_below="@id/tvDetection"
+        android:contentDescription="Image for prediction"
+        android:scaleType="centerCrop" />
+
+    <TextView
+        android:id="@+id/ageGenderTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/imageView"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="25dp"
+        android:textStyle="bold"
+        android:text="Age and Gender"
+        android:textSize="25sp" />
+
+    <TextView
+        android:id="@+id/expressionTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:layout_below="@+id/ageGenderTextView"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="25dp"
+        android:text="Expression"
+        android:textSize="25sp" />
+
+    <Button
+        android:id="@+id/selectImageButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:textSize="20dp"
+        android:layout_marginStart="100dp"
+        android:layout_marginEnd="100dp"
+        android:layout_below="@id/expressionTextView"
+        android:layout_marginTop="50dp"
+        android:gravity="center"
+        android:text="Select Image" />
+
+</RelativeLayout>

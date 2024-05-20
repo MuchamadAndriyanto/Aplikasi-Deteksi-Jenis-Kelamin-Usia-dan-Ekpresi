@@ -3,27 +3,59 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/bg"
     tools:context=".MainActivity">
 
-    <TextView
-        android:id="@+id/tvDetection"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="15dp"
-        android:textStyle="bold"
-        android:text="Aplikasi Detection Komedian"
-        android:textSize="25sp" />
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <androidx.appcompat.widget.Toolbar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/toolbar"
+            android:background="@color/bg"
+            android:minHeight="?attr/actionBarSize">
+
+            <TextView
+                android:id="@+id/tvDetection"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="10dp"
+                android:textColor="@color/text"
+                android:textStyle="bold"
+                android:text="Aplikasi Detection Komedian"
+                android:textSize="25sp" />
+        </androidx.appcompat.widget.Toolbar>
+
+        <View
+            android:id="@+id/divider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="-10dp"
+            android:background="@color/bgphoto"
+            app:layout_constraintTop_toBottomOf="@+id/toolbar"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+    </com.google.android.material.appbar.AppBarLayout>
 
     <ImageView
         android:id="@+id/imageView"
-        android:layout_width="250dp"
-        android:layout_height="250dp"
+        android:layout_width="270dp"
+        android:layout_height="270dp"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="50dp"
-        android:layout_below="@id/tvDetection"
+        android:background="@drawable/rounded_corners"
+        android:layout_below="@id/appBar"
         android:contentDescription="Image for prediction"
-        android:scaleType="centerCrop" />
+        android:scaleType="centerCrop"
+        android:clipToOutline="true" />
 
     <TextView
         android:id="@+id/ageGenderTextView"
@@ -31,8 +63,9 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/imageView"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="25dp"
+        android:layout_marginTop="35dp"
         android:textStyle="bold"
+        android:textColor="@color/text"
         android:text="Age and Gender"
         android:textSize="25sp" />
 
@@ -43,6 +76,7 @@
         android:textStyle="bold"
         android:layout_below="@+id/ageGenderTextView"
         android:layout_centerHorizontal="true"
+        android:textColor="@color/text"
         android:layout_marginTop="25dp"
         android:text="Expression"
         android:textSize="25sp" />
@@ -53,10 +87,14 @@
         android:layout_height="wrap_content"
         android:textStyle="bold"
         android:textSize="20dp"
-        android:layout_marginStart="100dp"
-        android:layout_marginEnd="100dp"
+        android:layout_marginStart="120dp"
+        android:layout_marginEnd="120dp"
         android:layout_below="@id/expressionTextView"
         android:layout_marginTop="50dp"
+        app:backgroundTint="@null"
+        android:padding="10dp"
+        android:background="@drawable/button"
+        android:textColor="@color/text"
         android:gravity="center"
         android:text="Select Image" />
 
@@ -66,10 +104,14 @@
         android:layout_height="wrap_content"
         android:textStyle="bold"
         android:textSize="20dp"
-        android:layout_marginStart="100dp"
-        android:layout_marginEnd="100dp"
+        android:layout_marginStart="120dp"
+        android:textColor="@color/text"
+        android:layout_marginEnd="120dp"
         android:layout_below="@id/selectImageButton"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="25dp"
+        app:backgroundTint="@null"
+        android:padding="10dp"
+        android:background="@drawable/button"
         android:gravity="center"
         android:text="Open Camera" />
 

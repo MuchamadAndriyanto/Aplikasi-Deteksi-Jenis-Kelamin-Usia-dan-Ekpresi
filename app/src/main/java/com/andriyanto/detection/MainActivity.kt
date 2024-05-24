@@ -44,8 +44,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         try {
-            agenderInterpreter = Interpreter(loadModelFile("agender_cnn_model.tflite"))
-            expressionInterpreter = Interpreter(loadModelFile("expression_cnn_model.tflite"))
+            agenderInterpreter = Interpreter(loadModelFile("agender_cnn_model (4).tflite"))
+            expressionInterpreter = Interpreter(loadModelFile("expression_cnn_model (4).tflite"))
         } catch (e: IOException) {
             e.printStackTrace()
         }

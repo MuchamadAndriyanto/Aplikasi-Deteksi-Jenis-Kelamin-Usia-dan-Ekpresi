@@ -19,6 +19,7 @@ import androidx.core.content.ContextCompat
 import com.andriyanto.detection.databinding.ActivityMainBinding
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
+import com.google.mlkit.vision.face.FaceContour
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
 import org.tensorflow.lite.Interpreter
@@ -47,26 +48,25 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Inisialisasi interpreter untuk model TensorFlow Lite
+        // Initialize TensorFlow Lite interpreters
         try {
-            agenderInterpreter = Interpreter(loadModelFile("agender_cnn_model (4).tflite"))
+            agenderInterpreter = Interpreter(loadModelFile("agender_cnn_model (6).tflite"))
             expressionInterpreter = Interpreter(loadModelFile("expression_cnn_model (4).tflite"))
         } catch (e: IOException) {
             e.printStackTrace()
         }
 
-        // Listener untuk tombol pilih gambar dari galeri
+        // Set listeners for buttons
         binding.selectImageButton.setOnClickListener {
             selectImageFromGallery()
         }
 
-        // Listener untuk tombol buka kamera
         binding.openCameraButton.setOnClickListener {
             openCamera()
         }
     }
 
-    // Fungsi untuk memuat model TensorFlow Lite dari aset
+    // Load the TensorFlow Lite model file from assets
     @Throws(IOException::class)
     private fun loadModelFile(modelPath: String): MappedByteBuffer {
         val fileDescriptor = assets.openFd(modelPath)
@@ -77,14 +77,14 @@ class MainActivity : AppCompatActivity() {
         return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
     }
 
-    // Fungsi untuk memilih gambar dari galeri
+    // Select an image from the gallery
     private fun selectImageFromGallery() {
         val intent = Intent(Intent.ACTION_PICK)
         intent.type = "image/*"
         startActivityForResult(intent, SELECT_PHOTO_REQUEST_CODE)
     }
 
-    // Fungsi untuk membuka kamera
+    // Open the camera to take a picture
     private fun openCamera() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
             != PackageManager.PERMISSION_GRANTED) {
@@ -96,7 +96,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Callback untuk hasil permintaan izin
+    // Handle permission request results
     override fun onRequestPermissionsResult(
         requestCode: Int, permissions: Array<String>, grantResults: IntArray
     ) {
@@ -113,7 +113,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Callback untuk hasil aktivitas memilih gambar atau mengambil foto
+    // Handle activity results for selecting an image or taking a picture
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         when (requestCode) {
@@ -125,7 +125,7 @@ class MainActivity : AppCompatActivity() {
                         val bitmap = BitmapFactory.decodeStream(inputStream)
                         binding.imageView.setImageBitmap(bitmap)
 
-                        // Lakukan deteksi wajah
+                        // Detect faces in the selected image
                         detectFace(bitmap)
                     }
                 }
@@ -135,19 +135,19 @@ class MainActivity : AppCompatActivity() {
                     val imageBitmap = data?.extras?.get("data") as Bitmap
                     binding.imageView.setImageBitmap(imageBitmap)
 
-                    // Lakukan deteksi wajah
+                    // Detect faces in the taken picture
                     detectFace(imageBitmap)
                 }
             }
         }
     }
 
-    // Fungsi untuk mendeteksi wajah dan menggambar kotak di sekitar wajah yang terdeteksi
+    // Detect faces and draw rectangles and points
     private fun detectFace(bitmap: Bitmap) {
         val image = InputImage.fromBitmap(bitmap, 0)
         val options = FaceDetectorOptions.Builder()
             .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
-            .setContourMode(FaceDetectorOptions.CONTOUR_MODE_NONE)
+            .setContourMode(FaceDetectorOptions.CONTOUR_MODE_ALL)
             .build()
         val detector = FaceDetection.getClient(options)
 
@@ -157,13 +157,13 @@ class MainActivity : AppCompatActivity() {
                     binding.ageGenderTextView.text = "No face detected"
                     binding.expressionTextView.text = ""
                 } else {
-                    // Gambar kotak di sekitar wajah yang terdeteksi
-                    val bitmapWithRectangles = drawRectanglesOnBitmap(bitmap, faces)
-                    binding.imageView.setImageBitmap(bitmapWithRectangles)
+                    // Draw rectangles and points on detected faces
+                    val bitmapWithRectanglesAndPoints = drawRectanglesAndPointsOnBitmap(bitmap, faces)
+                    binding.imageView.setImageBitmap(bitmapWithRectanglesAndPoints)
 
-                    // Lakukan prediksi usia, jenis kelamin, dan ekspresi
-                    predictAgeGender(bitmapWithRectangles)
-                    predictExpression(bitmapWithRectangles)
+                    // Predict age, gender, and expression
+                    predictAgeGender(bitmapWithRectanglesAndPoints)
+                    predictExpression(bitmapWithRectanglesAndPoints)
                 }
             }
             .addOnFailureListener { e ->
@@ -173,8 +173,8 @@ class MainActivity : AppCompatActivity() {
             }
     }
 
-    // Fungsi untuk menggambar kotak di sekitar wajah yang terdeteksi
-    private fun drawRectanglesOnBitmap(bitmap: Bitmap, faces: List<Face>): Bitmap {
+    // Draw rectangles and points on detected faces
+    private fun drawRectanglesAndPointsOnBitmap(bitmap: Bitmap, faces: List<Face>): Bitmap {
         val resultBitmap = bitmap.copy(bitmap.config, true)
         val canvas = Canvas(resultBitmap)
         val paint = Paint().apply {
@@ -183,21 +183,87 @@ class MainActivity : AppCompatActivity() {
             strokeWidth = 8f
         }
 
+        // Different colors for different face parts
+        val pointPaints = mapOf(
+            FaceContour.FACE to Paint().apply { color = Color.BLUE; style = Paint.Style.FILL; strokeWidth = 4f },
+            FaceContour.LEFT_EYEBROW_TOP to Paint().apply { color = Color.GREEN; style = Paint.Style.FILL; strokeWidth = 4f },
+            FaceContour.LEFT_EYEBROW_BOTTOM to Paint().apply { color = Color.GREEN; style = Paint.Style.FILL; strokeWidth = 4f },
+            FaceContour.RIGHT_EYEBROW_TOP to Paint().apply { color = Color.YELLOW; style = Paint.Style.FILL; strokeWidth = 4f },
+            FaceContour.RIGHT_EYEBROW_BOTTOM to Paint().apply { color = Color.YELLOW; style = Paint.Style.FILL; strokeWidth = 4f },
+            FaceContour.LEFT_EYE to Paint().apply { color = Color.CYAN; style = Paint.Style.FILL; strokeWidth = 4f },
+            FaceContour.RIGHT_EYE to Paint().apply { color = Color.CYAN; style = Paint.Style.FILL; strokeWidth = 4f },
+            FaceContour.UPPER_LIP_TOP to Paint().apply { color = Color.MAGENTA; style = Paint.Style.FILL; strokeWidth = 4f },
+            FaceContour.UPPER_LIP_BOTTOM to Paint().apply { color = Color.MAGENTA; style = Paint.Style.FILL; strokeWidth = 4f },
+            FaceContour.LOWER_LIP_TOP to Paint().apply { color = Color.MAGENTA; style = Paint.Style.FILL; strokeWidth = 4f },
+            FaceContour.LOWER_LIP_BOTTOM to Paint().apply { color = Color.MAGENTA; style = Paint.Style.FILL; strokeWidth = 4f },
+            FaceContour.NOSE_BRIDGE to Paint().apply { color = Color.RED; style = Paint.Style.FILL; strokeWidth = 4f },
+            FaceContour.NOSE_BOTTOM to Paint().apply { color = Color.RED; style = Paint.Style.FILL; strokeWidth = 4f },
+            FaceContour.LEFT_CHEEK to Paint().apply { color = Color.LTGRAY; style = Paint.Style.FILL; strokeWidth = 4f },
+            FaceContour.RIGHT_CHEEK to Paint().apply { color = Color.LTGRAY; style = Paint.Style.FILL; strokeWidth = 4f }
+        )
+
+        // Iterate over detected faces
         for (face in faces) {
             val bounds = face.boundingBox
             canvas.drawRect(bounds, paint)
+
+            // Draw points for facial landmarks with different colors
+            face.allContours.forEach { contour ->
+                val contourPaint = pointPaints[contour.faceContourType] ?: Paint().apply {
+                    color = Color.BLUE
+                    style = Paint.Style.FILL
+                    strokeWidth = 4f
+                }
+                contour.points.forEach { point ->
+                    canvas.drawCircle(point.x, point.y, 8f, contourPaint)
+                }
+            }
+
+            // Draw an arrow on the nose
+            val noseBottom = face.getContour(FaceContour.NOSE_BOTTOM)?.points
+            if (noseBottom != null && noseBottom.isNotEmpty()) {
+                val noseTip = noseBottom.first()
+                val noseBase = noseBottom.last()
+                drawArrow(canvas, noseTip.x, noseTip.y, noseBase.x, noseBase.y)
+            }
         }
 
         return resultBitmap
     }
 
-    // Fungsi untuk memprediksi usia dan jenis kelamin
+    // Draw an arrow
+    private fun drawArrow(canvas: Canvas, startX: Float, startY: Float, endX: Float, endY: Float) {
+        val paint = Paint().apply {
+            color = Color.RED
+            style = Paint.Style.STROKE
+            strokeWidth = 8f
+        }
+
+        // Draw line
+        canvas.drawLine(startX, startY, endX, endY, paint)
+
+        // Draw arrow head
+        val arrowHeadLength = 20f
+        val angle = Math.atan2((startY - endY).toDouble(), (startX - endX).toDouble())
+        val angle1 = angle + Math.PI / 6
+        val angle2 = angle - Math.PI / 6
+
+        val arrowX1 = (endX + arrowHeadLength * Math.cos(angle1)).toFloat()
+        val arrowY1 = (endY + arrowHeadLength * Math.sin(angle1)).toFloat()
+        val arrowX2 = (endX + arrowHeadLength * Math.cos(angle2)).toFloat()
+        val arrowY2 = (endY + arrowHeadLength * Math.sin(angle2)).toFloat()
+
+        canvas.drawLine(endX, endY, arrowX1, arrowY1, paint)
+        canvas.drawLine(endX, endY, arrowX2, arrowY2, paint)
+    }
+
+    // Predict age and gender
     private fun predictAgeGender(bitmap: Bitmap) {
         val resizedBitmap = Bitmap.createScaledBitmap(bitmap, 56, 56, true)
         val inputBuffer = ByteBuffer.allocateDirect(4 * 56 * 56 * 1)
         inputBuffer.order(ByteOrder.nativeOrder())
 
-        // Konversi bitmap ke grayscale dan normalisasi
+        // Convert bitmap to grayscale and normalize
         for (y in 0 until 56) {
             for (x in 0 until 56) {
                 val px = resizedBitmap.getPixel(x, y)
@@ -225,13 +291,13 @@ class MainActivity : AppCompatActivity() {
         binding.ageGenderTextView.text = "Age: $age\nGender: $gender"
     }
 
-    // Fungsi untuk memprediksi ekspresi
+    // Predict facial expression
     private fun predictExpression(bitmap: Bitmap) {
         val resizedBitmap = Bitmap.createScaledBitmap(bitmap, 56, 56, true)
         val inputBuffer = ByteBuffer.allocateDirect(4 * 56 * 56 * 1)
         inputBuffer.order(ByteOrder.nativeOrder())
 
-        // Konversi bitmap ke grayscale dan normalisasi
+        // Convert bitmap to grayscale and normalize
         for (y in 0 until 56) {
             for (x in 0 until 56) {
                 val px = resizedBitmap.getPixel(x, y)

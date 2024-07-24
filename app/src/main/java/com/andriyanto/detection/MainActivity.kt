@@ -49,7 +49,7 @@ class MainActivity : AppCompatActivity() {
 
         // Inisialisasi interpreter untuk model TensorFlow Lite
         try {
-            agenderInterpreter = Interpreter(loadModelFile("agender_cnn_model (4).tflite"))
+            agenderInterpreter = Interpreter(loadModelFile("agender_cnn_model (6).tflite"))
             expressionInterpreter = Interpreter(loadModelFile("expression_cnn_model (4).tflite"))
         } catch (e: IOException) {
             e.printStackTrace()
